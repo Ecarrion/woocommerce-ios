@@ -105,6 +105,10 @@ extension ProductCategoryListViewController: UITableViewDataSource, UITableViewD
         return cell
     }
 
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        viewModel.itemWillBeDisplayed(at: indexPath)
+    }
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // TODO-2020: Select category and update state
     }

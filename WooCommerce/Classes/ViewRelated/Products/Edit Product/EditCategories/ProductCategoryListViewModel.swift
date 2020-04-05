@@ -5,6 +5,14 @@ final class ProductCategoryListViewModel {
 
     private let product: Product
 
+    /// SyncCoordinator: Keeps tracks of which pages have been refreshed, and encapsulates the "What should we sync now" logic.
+    ///
+    private lazy var syncingCoordinator: SyncingCoordinator = {
+        let coordinator = SyncingCoordinator()
+        coordinator.delegate = self
+        return coordinator
+    }()
+
     private lazy var resultController: ResultsController<StorageProductCategory> = {
         let storageManager = ServiceLocator.storageManager
         let predicate = NSPredicate(format: "siteID = %ld", self.product.siteID)
@@ -41,10 +49,20 @@ final class ProductCategoryListViewModel {
         try? resultController.performFetch()
     }
 
+    /// Perform actions when an item is about to be displayed. Like fetching the next item page.
+    ///
+    func itemWillBeDisplayed(at indexPath: IndexPath) {
+        let lastCategoryIndex = categoriesResultController.objectIndex(from: indexPath)
+        syncingCoordinator.ensureNextPageIsSynchronized(lastVisibleIndex: lastCategoryIndex)
+    }
+
     /// Observes and notifies of changes made to product categories
+    /// Calling this method will remove any other previous observer and will reset the categories synching coordinator state.
     ///
     func observeCategoryListChanges(onReload: @escaping () -> (Void)) {
         observeResultControllerChanges(onReload: onReload)
+        syncingCoordinator.resetInternalState()
+        syncingCoordinator.synchronizeFirstPage()
     }
 
     /// Returns `true` if the receiver's product contains the given category. Otherwise returns `false`
@@ -57,19 +75,35 @@ final class ProductCategoryListViewModel {
 // MARK: - Synchronize Categories
 //
 private extension ProductCategoryListViewModel {
-    func syncronizeCategories() {
-        /// TODO-2020: Page Number and PageSized to be updated when `SyncingCoordinator` is implemented.
-        let action = ProductCategoryAction.synchronizeProductCategories(siteID: product.siteID, pageNumber: 1, pageSize: 30) { error in
+    /// Synchronizes product categories with a given page number and page size.
+    ///
+    func syncronizeCategories(pageNumber: Int, pageSize: Int, onCompletion: @escaping ((Error?) -> Void)) {
+        let action = ProductCategoryAction.synchronizeProductCategories(siteID: product.siteID, pageNumber: pageNumber, pageSize: pageSize) { error in
             if let error = error {
                 DDLogError("⛔️ Error fetching product categories: \(error.localizedDescription)")
             }
+            onCompletion(error)
         }
         ServiceLocator.stores.dispatch(action)
     }
 
+    /// Subscribe an observer to `categoriesResultController` changes
+    ///
     func observeResultControllerChanges(onReload: @escaping () -> (Void)) {
-        resultController.onDidChangeContent = {
+        categoriesResultController.onDidChangeContent = {
             onReload()
+        }
+    }
+}
+
+// MARK: - SyncingCoordinator Delegate
+//
+extension ProductCategoryListViewModel: SyncingCoordinatorDelegate {
+    /// Synchronizes the ProductCategories for the Default Store (if any).
+    ///
+    func sync(pageNumber: Int, pageSize: Int, reason: String? = nil, onCompletion: ((Bool) -> Void)? = nil) {
+        syncronizeCategories(pageNumber: pageNumber, pageSize: pageSize) { error in
+            onCompletion?(error == nil)
         }
     }
 }
