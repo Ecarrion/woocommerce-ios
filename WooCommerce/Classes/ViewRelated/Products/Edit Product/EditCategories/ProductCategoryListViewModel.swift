@@ -3,7 +3,29 @@ import Yosemite
 
 final class ProductCategoryListViewModel {
 
+    /// Represents the current state of `synchronizeProductCategories` action. Useful for the consumer to update it's UI upon changes
+    ///
+    enum SyncingState {
+        case initialized
+        case syncing(page: Int)
+        case synced
+    }
+
+    /// Product the user is editiing
+    ///
     private let product: Product
+
+    /// Closure to be invoked when `syncCoordinatorState` changes
+    ///
+    private var onSyncStateChange: ((SyncingState) -> Void)?
+
+    /// Current `synchingCoordinator` state
+    ///
+    private var syncCoordinatorState: SyncingState = .initialized {
+        didSet {
+            onSyncStateChange?(syncCoordinatorState)
+        }
+    }
 
     /// SyncCoordinator: Keeps tracks of which pages have been refreshed, and encapsulates the "What should we sync now" logic.
     ///
@@ -13,6 +35,8 @@ final class ProductCategoryListViewModel {
         return coordinator
     }()
 
+    /// `ResultsController` that represents all stored product categories
+    ///
     private lazy var resultController: ResultsController<StorageProductCategory> = {
         let storageManager = ServiceLocator.storageManager
         let predicate = NSPredicate(format: "siteID = %ld", self.product.siteID)
@@ -45,8 +69,9 @@ final class ProductCategoryListViewModel {
     /// Load existing categories from storage and fire the synchronize product categories action
     ///
     func performInitialFetch() {
-        syncronizeCategories()
         try? resultController.performFetch()
+        syncingCoordinator.resetInternalState()
+        syncingCoordinator.synchronizeFirstPage()
     }
 
     /// Perform actions when an item is about to be displayed. Like fetching the next item page.
@@ -57,12 +82,18 @@ final class ProductCategoryListViewModel {
     }
 
     /// Observes and notifies of changes made to product categories
-    /// Calling this method will remove any other previous observer and will reset the categories synching coordinator state.
+    /// Calling this method will remove any other previous observer.
     ///
     func observeCategoryListChanges(onReload: @escaping () -> (Void)) {
-        observeResultControllerChanges(onReload: onReload)
-        syncingCoordinator.resetInternalState()
-        syncingCoordinator.synchronizeFirstPage()
+        categoriesResultController.onDidChangeContent = onReload
+    }
+
+    /// Observes and notifies of changes made to the underlying synching coordinator. The current state will be dispatched upon subscription.
+    /// Calling this method will remove any other previous observer.
+    ///
+    func observeSyncStateChanges(onStateChanges: @escaping (SyncingState) -> Void) {
+        onSyncStateChange = onStateChanges
+        onSyncStateChange?(syncCoordinatorState)
     }
 
     /// Returns `true` if the receiver's product contains the given category. Otherwise returns `false`
@@ -102,7 +133,9 @@ extension ProductCategoryListViewModel: SyncingCoordinatorDelegate {
     /// Synchronizes the ProductCategories for the Default Store (if any).
     ///
     func sync(pageNumber: Int, pageSize: Int, reason: String? = nil, onCompletion: ((Bool) -> Void)? = nil) {
-        syncronizeCategories(pageNumber: pageNumber, pageSize: pageSize) { error in
+        syncCoordinatorState = .syncing(page: pageNumber)
+        syncronizeCategories(pageNumber: pageNumber, pageSize: pageSize) { [weak self] error in
+            self?.syncCoordinatorState = .synced
             onCompletion?(error == nil)
         }
     }
