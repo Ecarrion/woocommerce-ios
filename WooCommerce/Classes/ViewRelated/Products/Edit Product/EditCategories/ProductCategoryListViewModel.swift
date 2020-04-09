@@ -7,7 +7,8 @@ final class ProductCategoryListViewModel {
     ///
     enum SyncingState {
         case initialized
-        case syncing(page: Int)
+        case syncing(pageNumber: Int, pageSize: Int)
+        case failed(pageNumber: Int, pageSize: Int)
         case synced
     }
 
@@ -133,7 +134,7 @@ extension ProductCategoryListViewModel: SyncingCoordinatorDelegate {
     /// Synchronizes the ProductCategories for the Default Store (if any).
     ///
     func sync(pageNumber: Int, pageSize: Int, reason: String? = nil, onCompletion: ((Bool) -> Void)? = nil) {
-        syncCoordinatorState = .syncing(page: pageNumber)
+        syncCoordinatorState = .syncing(pageNumber: pageNumber, pageSize: pageSize)
         syncronizeCategories(pageNumber: pageNumber, pageSize: pageSize) { [weak self] error in
             self?.syncCoordinatorState = .synced
             onCompletion?(error == nil)

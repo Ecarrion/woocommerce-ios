@@ -66,6 +66,8 @@ private extension ProductCategoryListViewController {
 // MARK: - Synchronize Categories
 //
 private extension ProductCategoryListViewController {
+    /// Listen to category list changes and reload the table view when needed.
+    ///
     func configureViewModel() {
         viewModel.performInitialFetch()
         observeSyncronizeCategoriesState()
@@ -79,8 +81,10 @@ private extension ProductCategoryListViewController {
     func observeSyncronizeCategoriesState() {
         viewModel.observeSyncStateChanges { [weak self] syncState in
             switch syncState {
-            case .syncing(let page) where page == Store.Default.firstPageNumber:
+            case let .syncing(page, _) where page == Store.Default.firstPageNumber:
                 self?.displayPlaceholderCategories()
+            case let .failed(pageNumber, pageSize):
+                self?.displaySyncingErrorNotice(pageNumber: pageSize, pageSize: pageNumber)
             case .synced:
                 self?.removePlaceholderCategories()
             default:
@@ -98,7 +102,7 @@ private extension ProductCategoryListViewController {
     }
 }
 
-// MARK: - Placeholders
+// MARK: - Placeholders & Errors
 //
 private extension ProductCategoryListViewController {
     /// Renders ghost placeholder categories.
@@ -116,6 +120,22 @@ private extension ProductCategoryListViewController {
     func removePlaceholderCategories() {
         tableView.removeGhostContent()
         tableView.reloadData()
+    }
+
+    /// Displays the Sync Error Notice.
+    ///
+    func displaySyncingErrorNotice(pageNumber: Int, pageSize: Int) {
+        let message = NSLocalizedString("Unable to load categories", comment: "Load Product Categories Action Failed")
+        let actionTitle = NSLocalizedString("Retry", comment: "Retry Action")
+        let notice = Notice(title: message, feedbackType: .error, actionTitle: actionTitle) { [weak self] in
+            guard let self = self else {
+                return
+            }
+
+            self.viewModel.sync(pageNumber: pageNumber, pageSize: pageSize)
+        }
+
+        ServiceLocator.noticePresenter.enqueue(notice: notice)
     }
 }
 
