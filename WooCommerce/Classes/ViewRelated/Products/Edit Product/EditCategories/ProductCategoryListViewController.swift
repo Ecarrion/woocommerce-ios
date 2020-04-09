@@ -1,5 +1,6 @@
 import UIKit
 import Yosemite
+import WordPressUI
 
 /// ProductCategoryListViewController: Displays the list of ProductCategories associated to the active Account.
 ///
@@ -23,7 +24,7 @@ final class ProductCategoryListViewController: UIViewController {
         registerTableViewCells()
         configureTableView()
         configureNavigationBar()
-        configureViewModel()
+        observeCategories()
     }
 }
 
@@ -67,8 +68,24 @@ private extension ProductCategoryListViewController {
 private extension ProductCategoryListViewController {
     func configureViewModel() {
         viewModel.performInitialFetch()
+        observeSyncronizeCategoriesState()
         viewModel.observeCategoryListChanges { [weak self] in
             self?.tableView.reloadData()
+        }
+    }
+
+    /// Listen to viewModel's `syncState` changes
+    ///
+    func observeSyncronizeCategoriesState() {
+        viewModel.observeSyncStateChanges { [weak self] syncState in
+            switch syncState {
+            case .syncing(let page) where page == Store.Default.firstPageNumber:
+                self?.displayPlaceholderCategories()
+            case .synced:
+                self?.removePlaceholderCategories()
+            default:
+                break
+            }
         }
     }
 }
@@ -78,6 +95,27 @@ private extension ProductCategoryListViewController {
 private extension ProductCategoryListViewController {
     @objc private func doneButtonTapped() {
         // TODO-2020: Submit category changes
+    }
+}
+
+// MARK: - Placeholders
+//
+private extension ProductCategoryListViewController {
+    /// Renders ghost placeholder categories.
+    ///
+    func displayPlaceholderCategories() {
+        let placeholderCategoriesPerSection = [3]
+        let options = GhostOptions(displaysSectionHeader: false,
+                                   reuseIdentifier: ProductCategoryTableViewCell.reuseIdentifier,
+                                   rowsPerSection: placeholderCategoriesPerSection)
+        tableView.displayGhostContent(options: options)
+    }
+
+    /// Removes ghost  placeholder categories.
+    ///
+    func removePlaceholderCategories() {
+        tableView.removeGhostContent()
+        tableView.reloadData()
     }
 }
 
