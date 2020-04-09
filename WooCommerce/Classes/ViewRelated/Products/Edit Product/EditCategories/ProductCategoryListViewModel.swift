@@ -109,7 +109,7 @@ final class ProductCategoryListViewModel {
 private extension ProductCategoryListViewModel {
     /// Synchronizes product categories with a given page number and page size.
     ///
-    func syncronizeCategories(pageNumber: Int, pageSize: Int, onCompletion: @escaping ((Error?) -> Void)) {
+    func synchronizeCategories(pageNumber: Int, pageSize: Int, onCompletion: @escaping ((Error?) -> Void)) {
         let action = ProductCategoryAction.synchronizeProductCategories(siteID: product.siteID, pageNumber: pageNumber, pageSize: pageSize) { error in
             if let error = error {
                 DDLogError("⛔️ Error fetching product categories: \(error.localizedDescription)")
@@ -135,7 +135,7 @@ extension ProductCategoryListViewModel: SyncingCoordinatorDelegate {
     ///
     func sync(pageNumber: Int, pageSize: Int, reason: String? = nil, onCompletion: ((Bool) -> Void)? = nil) {
         syncCoordinatorState = .syncing(pageNumber: pageNumber, pageSize: pageSize)
-        syncronizeCategories(pageNumber: pageNumber, pageSize: pageSize) { [weak self] error in
+        synchronizeCategories(pageNumber: pageNumber, pageSize: pageSize) { [weak self] error in
             self?.syncCoordinatorState = .synced
             onCompletion?(error == nil)
         }

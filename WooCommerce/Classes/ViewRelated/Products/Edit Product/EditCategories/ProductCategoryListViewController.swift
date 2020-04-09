@@ -70,7 +70,7 @@ private extension ProductCategoryListViewController {
     ///
     func configureViewModel() {
         viewModel.performInitialFetch()
-        observeSyncronizeCategoriesState()
+        observeSynchronizeCategoriesState()
         viewModel.observeCategoryListChanges { [weak self] in
             self?.tableView.reloadData()
         }
@@ -78,7 +78,7 @@ private extension ProductCategoryListViewController {
 
     /// Listen to viewModel's `syncState` changes
     ///
-    func observeSyncronizeCategoriesState() {
+    func observeSynchronizeCategoriesState() {
         viewModel.observeSyncStateChanges { [weak self] syncState in
             switch syncState {
             case let .syncing(page, _) where page == Store.Default.firstPageNumber:
