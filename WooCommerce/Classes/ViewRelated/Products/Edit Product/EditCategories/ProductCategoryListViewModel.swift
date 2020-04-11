@@ -78,7 +78,7 @@ final class ProductCategoryListViewModel {
     /// Perform actions when an item is about to be displayed. Like fetching the next item page.
     ///
     func itemWillBeDisplayed(at indexPath: IndexPath) {
-        let lastCategoryIndex = categoriesResultController.objectIndex(from: indexPath)
+        let lastCategoryIndex = resultController.objectIndex(from: indexPath)
         syncingCoordinator.ensureNextPageIsSynchronized(lastVisibleIndex: lastCategoryIndex)
     }
 
@@ -86,7 +86,7 @@ final class ProductCategoryListViewModel {
     /// Calling this method will remove any other previous observer.
     ///
     func observeCategoryListChanges(onReload: @escaping () -> (Void)) {
-        categoriesResultController.onDidChangeContent = onReload
+        resultController.onDidChangeContent = onReload
     }
 
     /// Observes and notifies of changes made to the underlying synching coordinator. The current state will be dispatched upon subscription.
@@ -117,14 +117,6 @@ private extension ProductCategoryListViewModel {
             onCompletion(error)
         }
         ServiceLocator.stores.dispatch(action)
-    }
-
-    /// Subscribe an observer to `categoriesResultController` changes
-    ///
-    func observeResultControllerChanges(onReload: @escaping () -> (Void)) {
-        categoriesResultController.onDidChangeContent = {
-            onReload()
-        }
     }
 }
 
