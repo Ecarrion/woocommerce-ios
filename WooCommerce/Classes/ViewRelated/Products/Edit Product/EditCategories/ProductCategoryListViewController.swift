@@ -160,6 +160,7 @@ extension ProductCategoryListViewController: UITableViewDataSource, UITableViewD
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // TODO-2020: Select category and update state
+        viewModel.toggleSelectionOfCategory(at: indexPath)
+        tableView.reloadSelectedRow()
     }
 }

@@ -28,7 +28,14 @@ final class ProductCategoryListViewModel {
 
     /// Tracks the user category selection
     ///
-    private var selectedCategories: Set<ProductCategory>
+    private var selectedCategories: Set<ProductCategory> {
+        didSet {
+            guard selectedCategories != oldValue else {
+                return
+            }
+            updateViewModelsArray()
+        }
+    }
 
     /// Array of view models to be rendered by the View Controller.
     ///
@@ -85,6 +92,15 @@ final class ProductCategoryListViewModel {
         onSyncStateChange = onStateChanges
         onSyncStateChange?(syncCategoriesState)
     }
+
+    /// Toggles a category selection state based on the provided `CategoryViewModel` indexPath
+    ///
+    func toggleSelectionOfCategory(at indexPath: IndexPath) {
+        guard let category = productCategory(at: indexPath) else {
+            return
+        }
+        toggleCategorySelection(category)
+    }
 }
 
 // MARK: - Synchronize Categories
@@ -121,6 +137,29 @@ private extension ProductCategoryListViewModel {
     func updateViewModelsArray() {
         let fetchedCategories = resultController.fetchedObjects
         categoryViewModels = ProductCategoryViewModelBuilder.viewModels(from: fetchedCategories, selectedCategories: selectedCategories)
+    }
+}
+
+// MARK: - Category Selection
+//
+private extension ProductCategoryListViewModel {
+    /// Maps a `CategoryViewModel` indexPath into a fetched `ProductCategory`
+    ///
+    func productCategory(at indexPath: IndexPath) -> ProductCategory? {
+        let categoryViewModel = categoryViewModels[indexPath.row]
+        return resultController.fetchedObjects.first {
+            $0.categoryID == categoryViewModel.categoryID
+        }
+    }
+
+    /// Toggle the a category selection state
+    ///
+    func toggleCategorySelection(_ category: ProductCategory) {
+        if selectedCategories.contains(category) {
+            selectedCategories.remove(category)
+        } else {
+            selectedCategories.insert(category)
+        }
     }
 }
 

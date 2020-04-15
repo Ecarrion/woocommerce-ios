@@ -98,6 +98,6 @@ struct ProductCategoryViewModelBuilder {
                                   selectedCategories: Set<ProductCategory>,
                                   indentationLevel: Int) -> ProductCategoryViewModel {
         let isSelected = selectedCategories.contains(category)
-        return ProductCategoryViewModel(name: category.name, isSelected: isSelected, indentationLevel: indentationLevel)
+        return ProductCategoryViewModel(categoryID: category.categoryID, name: category.name, isSelected: isSelected, indentationLevel: indentationLevel)
     }
 }
