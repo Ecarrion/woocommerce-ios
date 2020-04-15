@@ -83,7 +83,7 @@ final class ProductCategoryViewModelBuilderTests: XCTestCase {
         let viewModels = ProductCategoryViewModelBuilder.viewModels(from: categories, selectedCategories: selectedCategories)
 
         // Then
-        let selectedCategoryNames = selectedCategories.map { $0.name }
+        let selectedCategoryNames = selectedCategories.sorted().map { $0.name }
         let selectedViewModelsNames = viewModels.filter { $0.isSelected }.map { $0.name }
         XCTAssertEqual(selectedCategoryNames, selectedViewModelsNames)
     }

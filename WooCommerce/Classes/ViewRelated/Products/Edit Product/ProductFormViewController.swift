@@ -570,7 +570,7 @@ private extension ProductFormViewController {
             navigationController?.popViewController(animated: true)
         }
 
-        guard newProductCategories != product.categories else {
+        guard newProductCategories.sorted() != product.categories.sorted() else {
             return
         }
 
