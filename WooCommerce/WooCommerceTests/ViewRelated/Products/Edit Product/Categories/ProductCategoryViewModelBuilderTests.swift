@@ -77,7 +77,7 @@ final class ProductCategoryViewModelBuilderTests: XCTestCase {
     func testRootCategoriesAreMarkedAsSelected() {
         // Given
         let categories = sampleCategories(initialID: 1, count: 10)
-        let selectedCategories = sampleCategories(initialID: 3, count: 5)
+        let selectedCategories = Set(sampleCategories(initialID: 3, count: 5))
 
         // When
         let viewModels = ProductCategoryViewModelBuilder.viewModels(from: categories, selectedCategories: selectedCategories)
@@ -92,7 +92,7 @@ final class ProductCategoryViewModelBuilderTests: XCTestCase {
         // Given
         let rootCategories = sampleCategories(initialID: 1, count: 10)
         let subCategories1 = sampleCategories(initialID: 11, parentID: 5, count: 5)
-        let selectedCategories = sampleCategories(initialID: 12, parentID: 5, count: 2)
+        let selectedCategories = Set(sampleCategories(initialID: 12, parentID: 5, count: 2))
         let allCategories = rootCategories + subCategories1
 
         // Then

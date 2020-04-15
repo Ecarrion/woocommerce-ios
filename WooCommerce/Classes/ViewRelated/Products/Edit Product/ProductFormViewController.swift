@@ -559,8 +559,22 @@ private extension ProductFormViewController {
 
 private extension ProductFormViewController {
     func editCategories() {
-        let categoryListViewController = ProductCategoryListViewController(product: product)
+        let categoryListViewController = ProductCategoryListViewController(product: product) { [weak self] selectedCategories in
+            self?.onEditProductCategoriesCompletion(newProductCategories: selectedCategories)
+        }
         show(categoryListViewController, sender: self)
+    }
+
+    func onEditProductCategoriesCompletion(newProductCategories: [ProductCategory]) {
+        defer {
+            navigationController?.popViewController(animated: true)
+        }
+
+        guard newProductCategories != product.categories else {
+            return
+        }
+
+        self.product = productUpdater.categoriesUpdated(categories: newProductCategories)
     }
 }
 

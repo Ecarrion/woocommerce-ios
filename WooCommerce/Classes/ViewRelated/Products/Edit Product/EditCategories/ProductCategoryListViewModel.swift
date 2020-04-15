@@ -28,7 +28,7 @@ final class ProductCategoryListViewModel {
 
     /// Tracks the user category selection
     ///
-    private var selectedCategories: Set<ProductCategory> {
+    private(set) var selectedCategories: Set<ProductCategory> {
         didSet {
             guard selectedCategories != oldValue else {
                 return

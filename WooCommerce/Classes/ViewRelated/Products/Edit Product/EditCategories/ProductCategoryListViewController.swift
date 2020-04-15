@@ -11,8 +11,12 @@ final class ProductCategoryListViewController: UIViewController {
 
     private let viewModel: ProductCategoryListViewModel
 
-    init(product: Product) {
+    typealias Completion = (_ selectedCategories: [ProductCategory]) -> Void
+    private let onCompletion: Completion
+
+    init(product: Product, onCompletion: @escaping Completion) {
         self.viewModel = ProductCategoryListViewModel(product: product)
+        self.onCompletion = onCompletion
         super.init(nibName: type(of: self).nibName, bundle: nil)
     }
 
@@ -100,7 +104,8 @@ private extension ProductCategoryListViewController {
 //
 private extension ProductCategoryListViewController {
     @objc private func doneButtonTapped() {
-        // TODO-2020: Submit category changes
+        let categories = Array(viewModel.selectedCategories)
+        onCompletion(categories)
     }
 }
 
