@@ -45,7 +45,7 @@ struct ProductCategoryViewModelBuilder {
     /// Returns an array of `ProductCategoryViewModel` by sorting the provided `categories` following a `Category -> SubCategory` order.
     /// Provide an array of `selectedCategories` to properly reflect the selected state in the returned view model array.
     ///
-    static func viewModels(from categories: [ProductCategory], selectedCategories: [ProductCategory]) -> [ProductCategoryViewModel] {
+    static func viewModels(from categories: [ProductCategory], selectedCategories: Set<ProductCategory>) -> [ProductCategoryViewModel] {
         // Create tree structure
         let tree = CategoryTree(categories: categories)
 
@@ -69,7 +69,7 @@ struct ProductCategoryViewModelBuilder {
     ///
     private static func flattenViewModels(of category: ProductCategory,
                                           in tree: CategoryTree,
-                                          selectedCategories: [ProductCategory],
+                                          selectedCategories: Set<ProductCategory>,
                                           depthLevel: Int = 1) -> [ProductCategoryViewModel] {
 
         // Base case, return an empty array when a category doesn't have any sub-categories
@@ -95,7 +95,7 @@ struct ProductCategoryViewModelBuilder {
     /// Return a view model for an specific category, indentation level and `selectedCategories` array
     ///
     private static func viewModel(for category: ProductCategory,
-                                  selectedCategories: [ProductCategory],
+                                  selectedCategories: Set<ProductCategory>,
                                   indentationLevel: Int) -> ProductCategoryViewModel {
         let isSelected = selectedCategories.contains(category)
         return ProductCategoryViewModel(name: category.name, isSelected: isSelected, indentationLevel: indentationLevel)

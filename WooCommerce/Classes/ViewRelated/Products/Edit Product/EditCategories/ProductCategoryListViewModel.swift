@@ -26,6 +26,10 @@ final class ProductCategoryListViewModel {
     ///
     private let product: Product
 
+    /// Tracks the user category selection
+    ///
+    private var selectedCategories: Set<ProductCategory>
+
     /// Array of view models to be rendered by the View Controller.
     ///
     private(set) var categoryViewModels: [ProductCategoryViewModel] = []
@@ -55,6 +59,7 @@ final class ProductCategoryListViewModel {
     init(storesManager: StoresManager = ServiceLocator.stores, product: Product) {
         self.storesManager = storesManager
         self.product = product
+        self.selectedCategories = Set(product.categories)
     }
 
     /// Load existing categories from storage and fire the synchronize all categories action.
@@ -115,7 +120,7 @@ private extension ProductCategoryListViewModel {
     ///
     func updateViewModelsArray() {
         let fetchedCategories = resultController.fetchedObjects
-        categoryViewModels = ProductCategoryViewModelBuilder.viewModels(from: fetchedCategories, selectedCategories: product.categories)
+        categoryViewModels = ProductCategoryViewModelBuilder.viewModels(from: fetchedCategories, selectedCategories: selectedCategories)
     }
 }
 
