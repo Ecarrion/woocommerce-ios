@@ -460,6 +460,9 @@ public struct Product: Codable {
         try container.encode(featured, forKey: .featured)
         try container.encode(catalogVisibilityKey, forKey: .catalogVisibilityKey)
         try container.encode(slug, forKey: .slug)
+
+        // Product Categories
+        try container.encode(categories, forKey: .categories)
     }
 }
 
